@@ -12,10 +12,6 @@ import apprise
 import requests
 
 
-def notify(plane):
-    print("hi")
-
-
 def main():
     # First we set the location to poll based on NGOES_LOCATIONID variable
     # It defaults to El Paso since they usually have apts and are great for testing code!
@@ -33,11 +29,7 @@ def main():
         print("Polling appointments")
         # Poll URL and load in the json
         response = requests.get(json_url, timeout=5)
-        json = response.json()
-        # Did we get anything back, if not, no appointments found.
-        if not json:
-            print("No Appointments Found")
-        else:
+        if json := response.json():
             two_weeks_future = time.time() + 1209600
             # If we did get something back, lets loop through results
             for appointment in json:
@@ -50,20 +42,25 @@ def main():
                 ).timestamp()
 
                 # First is this appointment less than 2 weeks in the future?
-                if appointment_timestamp < two_weeks_future:
-                    # And then, is it also an appointment we haven't reported yet?
-                    if appointment_timestamp not in reported_times:
-                        reported_times.append(appointment_timestamp)
+                if (
+                    appointment_timestamp < two_weeks_future
+                    and appointment_timestamp not in reported_times
+                ):
+                    reported_times.append(appointment_timestamp)
 
-                        notification = f"A Global Entry appointment is available at {appointment_str}"
-                        print(notification)
+                    notification = (
+                        f"A Global Entry appointment is available at {appointment_str}"
+                    )
+                    print(notification)
 
-                        apobj = apprise.Apprise()
-                        apobj.add(notify_url)
-                        apobj.notify(
-                            body=notification,
-                        )
+                    apobj = apprise.Apprise()
+                    apobj.add(notify_url)
+                    apobj.notify(
+                        body=notification,
+                    )
 
+        else:
+            print("No Appointments Found")
         print("Sleeping 15 minutes")
         time.sleep(900)
 
