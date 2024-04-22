@@ -12,10 +12,6 @@ import apprise
 import requests
 
 
-def notify(plane):
-    print("hi")
-
-
 def main():
     # First we set the location to poll based on NGOES_LOCATIONID variable
     # It defaults to El Paso since they usually have apts and are great for testing code!
@@ -33,37 +29,43 @@ def main():
         print("Polling appointments")
         # Poll URL and load in the json
         response = requests.get(json_url, timeout=5)
-        json = response.json()
-        # Did we get anything back, if not, no appointments found.
-        if not json:
-            print("No Appointments Found")
-        else:
+        if json := response.json():
             two_weeks_future = time.time() + 1209600
             # If we did get something back, lets loop through results
             for appointment in json:
-                # appointment_str is human readable
-                # appointment_timestamp is a numeric timestamp we will use
-                # to check if appointment is in the next 2 weeks
-                appointment_str = appointment["startTimestamp"]
-                appointment_timestamp = datetime.datetime.strptime(
+                # First pull in the appointment time into a datetime
+                appointment_time = datetime.datetime.strptime(
                     appointment["startTimestamp"], "%Y-%m-%dT%H:%M"
-                ).timestamp()
+                )
+                # Next change the formatting of the datetime for the notification:
+                # Monday April 22 at 12:50 pm
+                appointment_str = datetime.datetime.strftime(
+                    appointment_time, "%A, %B %d at %I:%M %p"
+                )
+                # Finally create a unixtimestamp version for easy math for the
+                # "next 2 weeks check"
+                appointment_timestamp = appointment_time.timestamp()
 
                 # First is this appointment less than 2 weeks in the future?
-                if appointment_timestamp < two_weeks_future:
-                    # And then, is it also an appointment we haven't reported yet?
-                    if appointment_timestamp not in reported_times:
-                        reported_times.append(appointment_timestamp)
+                if (
+                    appointment_timestamp < two_weeks_future
+                    and appointment_timestamp not in reported_times
+                ):
+                    reported_times.append(appointment_timestamp)
 
-                        notification = f"A Global Entry appointment is available at {appointment_str}"
-                        print(notification)
+                    notification = (
+                        f"A Global Entry appointment is available at {appointment_str}"
+                    )
+                    print(notification)
 
-                        apobj = apprise.Apprise()
-                        apobj.add(notify_url)
-                        apobj.notify(
-                            body=notification,
-                        )
+                    apobj = apprise.Apprise()
+                    apobj.add(notify_url)
+                    apobj.notify(
+                        body=notification,
+                    )
 
+        else:
+            print("No Appointments Found")
         print("Sleeping 15 minutes")
         time.sleep(900)
 
