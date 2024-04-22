@@ -33,13 +33,18 @@ def main():
             two_weeks_future = time.time() + 1209600
             # If we did get something back, lets loop through results
             for appointment in json:
-                # appointment_str is human readable
-                # appointment_timestamp is a numeric timestamp we will use
-                # to check if appointment is in the next 2 weeks
-                appointment_str = appointment["startTimestamp"]
-                appointment_timestamp = datetime.datetime.strptime(
+                # First pull in the appointment time into a datetime
+                appointment_time = datetime.datetime.strptime(
                     appointment["startTimestamp"], "%Y-%m-%dT%H:%M"
-                ).timestamp()
+                )
+                # Next change the formatting of the datetime for the notification:
+                # Monday April 22 at 12:50 pm
+                appointment_str = datetime.datetime.strftime(
+                    appointment_time, "%A, %B %d at %I:%M %p"
+                )
+                # Finally create a unixtimestamp version for easy math for the
+                # "next 2 weeks check"
+                appointment_timestamp = appointment_time.timestamp()
 
                 # First is this appointment less than 2 weeks in the future?
                 if (
