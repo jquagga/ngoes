@@ -13,6 +13,19 @@ import requests
 
 
 def main():
+    """
+    Polls for Global Entry appointments and sends notifications for available slots.
+
+    Sets the location to poll based on NGOES_LOCATIONID variable, defaults to El Paso.
+    Keeps a local list of reported appointment times to avoid duplicate notifications.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
     # First we set the location to poll based on NGOES_LOCATIONID variable
     # It defaults to El Paso since they usually have apts and are great for testing code!
     location_id = os.environ.get("NGOES_LOCATIONID", "5005")
