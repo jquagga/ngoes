@@ -12,6 +12,6 @@ This should be something you quickly set up and just run the docker.  You need t
 Putting that together into a docker command:
 
 ```
-docker run -d --name goes-notifier -e NGOES_LOCATIONID=5005 -e NOGES_NOTIFY_URL=ntfy://mynotifystring --restart unless-stopped ghcr.io/jquagga/ngoes:main
+docker run -d --init --name goes-notifier -e NGOES_LOCATIONID=5005 -e NGOES_NOTIFY_URL=ntfy://mynotifystring --restart unless-stopped ghcr.io/jquagga/ngoes:main
 
 ```
